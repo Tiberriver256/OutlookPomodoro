@@ -5,7 +5,7 @@ Function Start-PomodoroWork {
         [object]$Task,
         [int]$DingMinutes = 5,
         [int]$EstimatedPomodori = $Task.Userproperties.Item("EstimatedPomodori").Value,
-        [int]$BreakDuration
+        [int]$BreakDuration = 5
     )
     if (-not $Task.Userproperties.Item("EstimatedPomodori")) {
         $UserProperty = $Task.Userproperties.Add("EstimatedPomodori", [Microsoft.Office.Interop.Outlook.OlUserPropertyType]::olInteger)
@@ -124,6 +124,7 @@ Function Start-PomodoroWork {
         $Interruptions = @()
 
         [console]::TreatControlCAsInput = $True
+        [console]::CursorVisible = $False
         
         $Exit = $False
         while (-not $Exit -and ($Goal - $StopWatch.Elapsed) -gt 0 ) {
@@ -136,6 +137,7 @@ Function Start-PomodoroWork {
                         #cleanup 
                         Unregister-Event thetimer
                         [console]::TreatControlCAsInput = $False
+                        [console]::CursorVisible = $True
                         cls
                         Write-Host "Giving up eh? This pomodoro will not be logged..."
                         if ($Interruptions) {
@@ -167,6 +169,7 @@ Function Start-PomodoroWork {
         #cleanup 
         Unregister-Event thetimer
         [console]::TreatControlCAsInput = $False
+        [console]::CursorVisible = $True
         Start-ConsoleSong -Song 'Imperial March' 
         if ($Interruptions) {
             Complete-Interruptions -Interruptions $Interruptions 
@@ -299,6 +302,7 @@ Function Start-PomodoroBreak {
     $timer = new-object timers.timer 
    
     [console]::TreatControlCAsInput = $True
+    [console]::CursorVisible = $False
     
     $action = {
         function Write-ToPos ([string] $str, [int] $x = 0, [int] $y = 0,
@@ -331,7 +335,8 @@ Function Start-PomodoroBreak {
     } 
     
     $timer.Interval = 300  
-
+    
+    $MessageData = @{}
     $MessageData.timer = $timer
     $MessageData.goal = $Goal
     $MessageData.Stopwatch = $StopWatch
@@ -339,7 +344,6 @@ Function Start-PomodoroBreak {
     
     Register-ObjectEvent -InputObject $timer -EventName elapsed `
         -SourceIdentifier thetimer -Action $action -MessageData $MessageData
-        
     $timer.start()
 
         
@@ -352,6 +356,7 @@ Function Start-PomodoroBreak {
                     $timer.stop()
                     $StopWatch.Stop()
                     [console]::TreatControlCAsInput = $False
+                    [console]::CursorVisible = $True
                     #cleanup 
                     Unregister-Event thetimer
                     cls
@@ -362,7 +367,11 @@ Function Start-PomodoroBreak {
             }
         }
     }
-    [console]::TreatControlCAsInput = $False 
+
+    Start-ConsoleSong -Song "Mission Impossible"
+
+    [console]::TreatControlCAsInput = $False
+    [console]::CursorVisible = $True
     $timer.stop()
     $StopWatch.Stop() 
     #cleanup 
