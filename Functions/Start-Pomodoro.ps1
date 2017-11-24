@@ -2,8 +2,8 @@ Function Start-PomodoroWork {
     Param (
         [int]$Minutes = 25,
         [int]$Seconds = 0,
-        [object]
-        $Task,
+        [object]$Task,
+        [int]$DingMinutes = 5,
         [int]$EstimatedPomodori = $Task.Userproperties.Item("EstimatedPomodori").Value,
         [int]$BreakDuration
     )
@@ -26,12 +26,11 @@ Function Start-PomodoroWork {
         $UserProperty.Value = $EstimatedPomodori
     }
 
-
+    $FirstDing = [timespan]"00:$DingMinutes`:00"
     $Task.Save()
 
     while (-not $Task.Status -eq 2) {
         $StopWatch = New-Object -TypeName System.Diagnostics.Stopwatch
-        Start-ConsoleSong -Song "Mission Impossible"
         $Goal = [timespan]"00:$Minutes`:$Seconds"
         $StopWatch.Start()
 
@@ -58,6 +57,10 @@ Function Start-PomodoroWork {
                     [console]::setcursorposition($saveX, $saveY)
     
                 }
+            }
+            if ($Event.MessageData.FirstDing -lt $Event.MessageData.StopWatch.Elapsed) {
+                [System.Media.SoundPlayer]::new( "$PSScriptRoot\Coin Obtained SFX.wav").playsync()
+                $Event.MessageData.FirstDing = $Event.MessageData.FirstDing.Add("0:$($Event.MessageData.DingMinutes):0")
             }
 
             cls
@@ -109,6 +112,8 @@ Function Start-PomodoroWork {
         $MessageData.PomodoroSyncHash = $PomodoroSynchas
         $MessageData.EstimatedPomodori = $EstimatedPomodori
         $MessageData.CompletedPomodori = $CompletedPomodori
+        $MessageData.FirstDing = $FirstDing
+        $MessageData.DingMinutes = $DingMinutes
     
     
         Register-ObjectEvent -InputObject $timer -EventName elapsed `
