@@ -120,7 +120,7 @@ function Publish-SfBContactInformation {
         }
 
         if ($ContactInfo.Count -gt 0) {
-
+            $ContactInfo
             $Publish = $Self.BeginPublishContactInformation($ContactInfo, $null, $null)
             $self.EndPublishContactInformation($Publish)
 
