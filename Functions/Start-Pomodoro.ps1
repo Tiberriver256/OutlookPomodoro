@@ -7,6 +7,7 @@ Function Start-PomodoroWork {
         [int]$EstimatedPomodori = $Task.Userproperties.Item("EstimatedPomodori").Value,
         [int]$BreakDuration = 5
     )
+    cls
     if (-not $Task.Userproperties.Item("EstimatedPomodori")) {
         $UserProperty = $Task.Userproperties.Add("EstimatedPomodori", [Microsoft.Office.Interop.Outlook.OlUserPropertyType]::olInteger)
         $UserProperty.Value = $EstimatedPomodori
@@ -22,8 +23,9 @@ Function Start-PomodoroWork {
 
 
     if ($EstimatedPomodori -lt 1) {
+        Write-Host "No estimated pomodori for task: $($Task.Subject)`n"
         $EstimatedPomodori = [int](Read-Host "How many pomodori do you estimate it will take to complete this task?")
-        $UserProperty.Value = $EstimatedPomodori
+        $Task.UserProperties.Item("EstimatedPomodori").Value = $EstimatedPomodori
     }
 
     $FirstDing = [timespan]"00:$DingMinutes`:00"
@@ -80,6 +82,8 @@ Function Start-PomodoroWork {
                         " x "
                     }
             } )"
+
+            Write-ToPos -x 10 -y 28 -str "Press [d] to mark this task done early"
         } 
     
         $timer.Interval = 300  
@@ -109,7 +113,7 @@ Function Start-PomodoroWork {
         $MessageData.task = $Task
         $MessageData.goal = $Goal
         $MessageData.Stopwatch = $StopWatch
-        $MessageData.PomodoroSyncHash = $PomodoroSynchas
+        $MessageData.PomodoroSyncHash = $PomodoroSynchash
         $MessageData.EstimatedPomodori = $EstimatedPomodori
         $MessageData.CompletedPomodori = $CompletedPomodori
         $MessageData.FirstDing = $FirstDing
@@ -156,6 +160,17 @@ Function Start-PomodoroWork {
                         $Interruptions += Add-Interruption -Type Internal
                         $PomodoroSynchash.InternalInterruptions += 1; 
                         $Task.Userproperties.Item("InternalInterruptions").Value = $PomodoroSynchash.InternalInterruptions 
+                    }
+                    "D" {
+                        cls
+                        Write-Host "Remember! The Pomdoro technique recommends you review the task until the pomodoro ends"
+                        Write-Host "If you find yourself completing tasks early often, consider grouping small tasks together into a single task`n`n"
+
+                        $Done = Read-Host "Would you still like to mark this task done early? [Y]"
+                        if ($Done -eq "y") {
+                            $Exit = $True 
+                        }
+
                     }
                     Default {
                         
