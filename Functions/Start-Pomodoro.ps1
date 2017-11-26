@@ -145,6 +145,8 @@ Function Start-PomodoroWork {
                         [console]::CursorVisible = $True
                         cls
                         Write-Host "Giving up eh? This pomodoro will not be logged..."
+                        $Task.ActualWork += $StopWatch.Elapsed.TotalMinutes
+                        $Task.Save()
                         if ($Interruptions) {
                             Complete-Interruptions -Interruptions $Interruptions 
                         }
