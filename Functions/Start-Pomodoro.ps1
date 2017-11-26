@@ -215,7 +215,7 @@ Function Start-PomodoroWork {
 
         cls
         Write-Host "Congrats you successfully completed a pomodoro for the following task: $($Task.Subject). Time for a break.."
-        $Task.ActualWork += $Minutes
+        $Task.ActualWork += $StopWatch.Elapsed.TotalMinutes
         $Task.Userproperties.Item("CompletedPomodori").Value = $CompletedPomodori
         $Task.Save()
         Start-PomodoroBreak -BreakDuration $BreakDuration
