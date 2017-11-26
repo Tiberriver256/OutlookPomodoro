@@ -132,6 +132,7 @@ Function Start-PomodoroWork {
         
         $Exit = $False
         while (-not $Exit -and ($Goal - $StopWatch.Elapsed) -gt 0 ) {
+            Start-Sleep -Milliseconds 100
             if ([console]::KeyAvailable) {
                 switch -regex ([console]::ReadKey().key) {
                     "(Q|C)" { 
