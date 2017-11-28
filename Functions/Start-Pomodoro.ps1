@@ -421,7 +421,7 @@ Function Complete-Interruptions {
                 Write-Host "Forgotten..."
             }
             1 {
-                New-OutlookTask -Description $Interruption 
+                New-OutlookNoteToSelf -Note $Interruption 
             }
         }
     }
