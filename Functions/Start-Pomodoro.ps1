@@ -212,6 +212,15 @@ Function Start-PomodoroWork {
             0 {
                 $Task.Status = 2
                 $Task.save()
+                if ($Task.IsRecurring) {
+                    @(
+                        "CompletedPomodori",
+                        "InternalInterruptions",
+                        "ExternalInterruptions"      
+                    ) | ForEach-Object {
+                        $Task.UserProperties.Item($_).Value = 0
+                    }
+                }
             }
         } 
 
@@ -409,8 +418,8 @@ Function Complete-Interruptions {
         $Forget = New-Object System.Management.Automation.Host.ChoiceDescription "&Forget It", `
             "Nothing will be done."
         
-        $Todo = New-Object System.Management.Automation.Host.ChoiceDescription "&Todo", `
-            "Outlook task will be created"
+        $Todo = New-Object System.Management.Automation.Host.ChoiceDescription "&Inbox It", `
+            "Note will be dropped into your Outlook Inbox"
 
         $options = [System.Management.Automation.Host.ChoiceDescription[]]($Forget, $Todo)
         
