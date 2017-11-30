@@ -65,25 +65,29 @@ Function Start-PomodoroWork {
                 $Event.MessageData.FirstDing = $Event.MessageData.FirstDing.Add("0:$($Event.MessageData.DingMinutes):0")
             }
 
-            cls
-            Write-ToPos -x 10 -y 9 -str "Working on: $($Event.MessageData.Task.Subject)"
-            Write-ToPos -x 10 -y 10 -str "Time Left: $(($Event.MessageData.Goal - $Event.MessageData.StopWatch.Elapsed).ToString())"
-            Write-ToPos -x 10 -y 15 -str "Internal interruptions: $($Event.MessageData.PomodoroSyncHash.InternalInterruptions) `t External interruptions: $($Event.MessageData.PomodoroSyncHash.ExternalInterruptions)"
-            Write-ToPos -x 10 -y 20 -str "Press [Q] to cancel pomodoro"
-            Write-ToPos -x 10 -y 22 -str "Press [-] to log an external interruption"
-            Write-ToPos -x 10 -y 24 -str "Press ['] to log an internal interruption"
-            Write-ToPos -x 10 -y 26 -str "Pomodori: $( 
-                for($i = 1; $i -le $Event.MessageData.EstimatedPomodori -or $i -le $Event.MessageData.CompletedPomodori; $i++) {
-                    if ($i -le $Event.MessageData.EstimatedPomodori -and $i -le $Event.MessageData.CompletedPomodori){
-                        " [x] "
-                    } elseif ($i -gt $Event.MessageData.CompletedPomodori){
-                        " [ ] "
-                    } else {
-                        " x "
-                    }
-            } )"
-
-            Write-ToPos -x 10 -y 28 -str "Press [d] to mark this task done early"
+            if ($Event.MessageData.Repaint) {
+                cls
+                Write-ToPos -x 10 -y 9 -str "Working on: $($Event.MessageData.Task.Subject)"
+                Write-ToPos -x 10 -y 12 -str "Press [P] to toggle pausing the timer`tPress [R] to reset the timer"
+                Write-ToPos -x 10 -y 15 -str "Internal interruptions: $($Event.MessageData.PomodoroSyncHash.InternalInterruptions) `t External interruptions: $($Event.MessageData.PomodoroSyncHash.ExternalInterruptions)"
+                Write-ToPos -x 10 -y 20 -str "Press [Q] to cancel pomodoro"
+                Write-ToPos -x 10 -y 22 -str "Press [-] to log an external interruption"
+                Write-ToPos -x 10 -y 24 -str "Press ['] to log an internal interruption"
+                Write-ToPos -x 10 -y 26 -str "Pomodori: $( 
+                    for($i = 1; $i -le $Event.MessageData.EstimatedPomodori -or $i -le $Event.MessageData.CompletedPomodori; $i++) {
+                        if ($i -le $Event.MessageData.EstimatedPomodori -and $i -le $Event.MessageData.CompletedPomodori){
+                            " [x] "
+                        } elseif ($i -gt $Event.MessageData.CompletedPomodori){
+                            " [ ] "
+                        } else {
+                            " x "
+                        }
+                } )"
+    
+                Write-ToPos -x 10 -y 28 -str "Press [d] to mark this task done early"
+                $Event.MessageData.Repaint = $False 
+            }
+            Write-ToPos -x 10 -y 10 -str "Time Left: $(($Event.MessageData.Goal - $Event.MessageData.StopWatch.Elapsed).ToString())" 
         } 
     
         $timer.Interval = 300  
@@ -118,6 +122,7 @@ Function Start-PomodoroWork {
         $MessageData.CompletedPomodori = $CompletedPomodori
         $MessageData.FirstDing = $FirstDing
         $MessageData.DingMinutes = $DingMinutes
+        $MessageData.Repaint = $True
     
     
         Register-ObjectEvent -InputObject $timer -EventName elapsed `
@@ -143,6 +148,7 @@ Function Start-PomodoroWork {
                         Unregister-Event thetimer
                         [console]::TreatControlCAsInput = $False
                         [console]::CursorVisible = $True
+                        $MessageData.Repaint = $True
                         cls
                         Write-Host "Giving up eh? This pomodoro will not be logged..."
                         $Task.ActualWork += $StopWatch.Elapsed.TotalMinutes
@@ -153,18 +159,21 @@ Function Start-PomodoroWork {
                         return
                     }
                     "(OemMinus|Subtract)" {
+                        $MessageData.Repaint = $True
                         cls
                         $Interruptions += Add-Interruption -Type External
                         $PomodoroSynchash.ExternalInterruptions += 1; 
                         $Task.Userproperties.Item("ExternalInterruptions").Value = $PomodoroSynchash.ExternalInterruptions 
                     }
                     "Oem7" {
+                        $MessageData.Repaint = $True
                         cls 
                         $Interruptions += Add-Interruption -Type Internal
                         $PomodoroSynchash.InternalInterruptions += 1; 
                         $Task.Userproperties.Item("InternalInterruptions").Value = $PomodoroSynchash.InternalInterruptions 
                     }
                     "D" {
+                        $MessageData.Repaint = $True
                         cls
                         Write-Host "Remember! The Pomdoro technique recommends you review the task until the pomodoro ends"
                         Write-Host "If you find yourself completing tasks early often, consider grouping small tasks together into a single task`n`n"
@@ -174,6 +183,19 @@ Function Start-PomodoroWork {
                             $Exit = $True 
                         }
 
+                    }
+                    "P" {
+                        $MessageData.Repaint = $True
+                        if ($StopWatch.IsRunning) {
+                            $StopWatch.Stop() 
+                        }
+                        else {
+                            $StopWatch.Start()
+                        }
+                    }
+                    "R" {
+                        $MessageData.Repaint = $True
+                        $StopWatch.Restart()
                     }
                     Default {
                         
@@ -230,6 +252,7 @@ Function Start-PomodoroWork {
         $Task.Userproperties.Item("CompletedPomodori").Value = $CompletedPomodori
         $Task.Save()
         Start-PomodoroBreak -BreakDuration $BreakDuration
+        $MessageData.Repaint = $True
     }
 
 }
