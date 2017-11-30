@@ -74,7 +74,8 @@
         'New-OutlookTask', 
         'New-OutlookCalendarAppointment', 
         'Get-OutlookCalendarItems', 
-        'Connect-Outlook'
+        'Connect-Outlook',
+        'New-OutlookNoteToSelf'
     )
 
     # Cmdlets to export from this module
