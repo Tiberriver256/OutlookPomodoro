@@ -423,9 +423,8 @@ Function Start-PomodoroBreak {
     $timer.stop()
     $StopWatch.Stop()
     cls
-    
-    Start-ConsoleSong -Song "Mission Impossible"
 
+    Start-ConsoleSong -Song "Mission Impossible"
      
     #cleanup 
     Unregister-Event thetimer
