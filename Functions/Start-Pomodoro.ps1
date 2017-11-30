@@ -418,12 +418,15 @@ Function Start-PomodoroBreak {
         }
     }
 
-    Start-ConsoleSong -Song "Mission Impossible"
-
     [console]::TreatControlCAsInput = $False
     [console]::CursorVisible = $True
     $timer.stop()
-    $StopWatch.Stop() 
+    $StopWatch.Stop()
+    cls
+    
+    Start-ConsoleSong -Song "Mission Impossible"
+
+     
     #cleanup 
     Unregister-Event thetimer
 
