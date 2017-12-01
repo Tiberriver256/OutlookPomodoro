@@ -7,6 +7,9 @@ Function Start-PomodoroWork {
         [int]$EstimatedPomodori = $Task.Userproperties.Item("EstimatedPomodori").Value,
         [int]$BreakDuration = 5
     )
+        
+    $RecurringTaskFinished = $False
+
     cls
     if (-not $Task.Userproperties.Item("EstimatedPomodori")) {
         $UserProperty = $Task.Userproperties.Add("EstimatedPomodori", [Microsoft.Office.Interop.Outlook.OlUserPropertyType]::olInteger)
@@ -31,7 +34,7 @@ Function Start-PomodoroWork {
     $FirstDing = [timespan]"00:$DingMinutes`:00"
     $Task.Save()
 
-    while (-not $Task.Status -eq 2) {
+    while (-not $Task.Status -eq 2 -and -not $RecurringTaskFinished) {
         $StopWatch = New-Object -TypeName System.Diagnostics.Stopwatch
         $Goal = [timespan]"00:$Minutes`:$Seconds"
         $StopWatch.Start()
@@ -140,7 +143,7 @@ Function Start-PomodoroWork {
             Start-Sleep -Milliseconds 100
             if ([console]::KeyAvailable) {
                 switch -regex ([console]::ReadKey().key) {
-                    "(Q|C)" { 
+                    "(Q|C)" {
                         $Exit = $True 
                         $timer.stop()
                         $StopWatch.Stop() 
@@ -159,20 +162,30 @@ Function Start-PomodoroWork {
                         return
                     }
                     "(OemMinus|Subtract)" {
+                        $timer.stop()
+                        $StopWatch.Start()
                         $MessageData.Repaint = $True
                         cls
                         $Interruptions += Add-Interruption -Type External
                         $PomodoroSynchash.ExternalInterruptions += 1; 
                         $Task.Userproperties.Item("ExternalInterruptions").Value = $PomodoroSynchash.ExternalInterruptions 
+                        $StopWatch.Stop()
+                        $timer.Start()
                     }
                     "Oem7" {
+                        $timer.stop()
+                        $StopWatch.Stop()
                         $MessageData.Repaint = $True
                         cls 
                         $Interruptions += Add-Interruption -Type Internal
                         $PomodoroSynchash.InternalInterruptions += 1; 
                         $Task.Userproperties.Item("InternalInterruptions").Value = $PomodoroSynchash.InternalInterruptions 
+                        $StopWatch.Start()
+                        $timer.Start()
                     }
                     "D" {
+                        $timer.stop()
+                        $StopWatch.Stop()
                         $MessageData.Repaint = $True
                         cls
                         Write-Host "Remember! The Pomdoro technique recommends you review the task until the pomodoro ends"
@@ -182,9 +195,11 @@ Function Start-PomodoroWork {
                         if ($Done -eq "y") {
                             $Exit = $True 
                         }
-
+                        $StopWatch.Start()
+                        $timer.Start()
                     }
                     "P" {
+                        $timer.stop()
                         $MessageData.Repaint = $True
                         if ($StopWatch.IsRunning) {
                             $StopWatch.Stop() 
@@ -192,6 +207,7 @@ Function Start-PomodoroWork {
                         else {
                             $StopWatch.Start()
                         }
+                        $timer.Start()
                     }
                     "R" {
                         $MessageData.Repaint = $True
@@ -228,28 +244,31 @@ Function Start-PomodoroWork {
 
         $options = [System.Management.Automation.Host.ChoiceDescription[]]($Yes, $No)
         
-        $result = $host.ui.PromptForChoice($title, $message, $options, 0) 
+        $result = $host.ui.PromptForChoice($title, $message, $options, 0)
+
+        $Task.ActualWork += $StopWatch.Elapsed.TotalMinutes
+        $Task.Userproperties.Item("CompletedPomodori").Value = $CompletedPomodori
         
         switch ($result) {
             0 {
                 $Task.Status = 2
                 $Task.save()
                 if ($Task.IsRecurring) {
-                    @(
-                        "CompletedPomodori",
-                        "InternalInterruptions",
-                        "ExternalInterruptions"      
-                    ) | ForEach-Object {
-                        $Task.UserProperties.Item($_).Value = 0
+                    foreach ($Property in @(
+                            "CompletedPomodori",
+                            "InternalInterruptions",
+                            "ExternalInterruptions"      
+                        )) {
+                        $Task.UserProperties.Item($Property).Value = 0
                     }
+                    $RecurringTaskFinished = $True
                 }
             }
         } 
 
         cls
         Write-Host "Congrats you successfully completed a pomodoro for the following task: $($Task.Subject). Time for a break.."
-        $Task.ActualWork += $StopWatch.Elapsed.TotalMinutes
-        $Task.Userproperties.Item("CompletedPomodori").Value = $CompletedPomodori
+        
         $Task.Save()
         Start-PomodoroBreak -BreakDuration $BreakDuration
         $MessageData.Repaint = $True
