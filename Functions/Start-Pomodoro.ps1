@@ -163,13 +163,13 @@ Function Start-PomodoroWork {
                     }
                     "(OemMinus|Subtract)" {
                         $timer.stop()
-                        $StopWatch.Start()
+                        $StopWatch.Stop()
                         $MessageData.Repaint = $True
                         cls
                         $Interruptions += Add-Interruption -Type External
                         $PomodoroSynchash.ExternalInterruptions += 1; 
                         $Task.Userproperties.Item("ExternalInterruptions").Value = $PomodoroSynchash.ExternalInterruptions 
-                        $StopWatch.Stop()
+                        $StopWatch.Start()
                         $timer.Start()
                     }
                     "Oem7" {
