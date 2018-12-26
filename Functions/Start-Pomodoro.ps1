@@ -226,7 +226,7 @@ Function Start-PomodoroWork {
         Unregister-Event thetimer
         [console]::TreatControlCAsInput = $False
         [console]::CursorVisible = $True
-        Start-ConsoleSong -Song 'Imperial March' 
+        # Start-ConsoleSong -Song 'Imperial March' 
         if ($Interruptions) {
             Complete-Interruptions -Interruptions $Interruptions 
         }

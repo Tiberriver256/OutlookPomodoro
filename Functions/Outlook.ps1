@@ -211,7 +211,11 @@ function New-OutlookTask {
 function Get-OutlookTasks {
 
     param(
-        [string]$Folder
+        [string]$Folder,
+
+        [ValidateNotNullOrEmpty()]
+        [ValidateSet('Open','Closed')]
+        [string]$State = 'Open'
     )
     
 
@@ -230,9 +234,14 @@ function Get-OutlookTasks {
             }
         }
     }
-        
 
-    $Tasks = $TasksFolder.Items | where {$_.MessageClass -eq "IPM.Task"} | Sort-Object -Property Subject
+    if($State -eq "Closed"){
+        $StatusQuery = "[Status] = 2"
+    } else {
+        $StatusQuery = "[Status] <> 2"
+    }
+
+    $Tasks = $TasksFolder.Items.Restrict("$StatusQuery And [MessageClass] = 'IPM.Task'") | Sort-Object -Property Subject
     $Tasks | Add-Member -MemberType ScriptProperty -Name StatusParsed -Value `
     {
         # Get
