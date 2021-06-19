@@ -214,7 +214,7 @@ function Get-OutlookTasks {
         [string]$Folder,
 
         [ValidateNotNullOrEmpty()]
-        [ValidateSet('Open','Closed')]
+        [ValidateSet('Open', 'Closed')]
         [string]$State = 'Open'
     )
     
@@ -227,17 +227,18 @@ function Get-OutlookTasks {
     }
     else {
         $Folders = $Folder -split "\\"
-        $TasksFolder = $Global:Outlook.Session.Folders($Folders[0])
+        $TasksFolder = $Global:Outlook.Session.Folders.Item($Folders[0])
         $Folders[1..$Folders.count] | foreach {
             if (-not [string]::IsNullOrEmpty($_)) {
-                $TasksFolder = $TasksFolder.Folders($_)   
+                $TasksFolder = $TasksFolder.Folders.Item($_)   
             }
         }
     }
 
-    if($State -eq "Closed"){
+    if ($State -eq "Closed") {
         $StatusQuery = "[Status] = 2"
-    } else {
+    }
+    else {
         $StatusQuery = "[Status] <> 2"
     }
 
@@ -306,10 +307,10 @@ function Get-OutlookTasks {
         # Set
         param([string]$Folder)
         $Folders = $Folder -split "\\"
-        $TasksFolder = $Global:Outlook.Session.Folders($Folders[0])
+        $TasksFolder = $Global:Outlook.Session.Folders.Item($Folders[0])
         $Folders[1..$Folders.count] | foreach {
             if (-not [string]::IsNullOrEmpty($_)) {
-                $TasksFolder = $TasksFolder.Folders($_)   
+                $TasksFolder = $TasksFolder.Folders.Item($_)
             }
         }
         $this.move($TasksFolder)
