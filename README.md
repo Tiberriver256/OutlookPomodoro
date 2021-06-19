@@ -1,57 +1,73 @@
-# Introduction
+# OutlookPomodoro
 
-The PSProductivityTools PowerShell module contains commands for productivity tools & topics such as time management.
+## Introduction
 
-# Installation
+This is a personal productivity tool I developed to help myself stay on track of tasks. It requires that you be using a Windows computer with Outlook installed.
 
-The module is published to the PowerShell Gallery, which means you can install it using the following command from the PowerShellGet module:
+Original inspiration was from https://github.com/janegilring/PSProductivityTools and [The Pomodoro Technique](https://en.wikipedia.org/wiki/Pomodoro_Technique)
 
-`Install-Module -Name PSProductivityTools`
+## Features
 
-or the following if you want it installed the current users profile (*$env:userprofile\Documents\WindowsPowerShell\Modules*) rather than the system wide location (*$env:programfiles\WindowsPowerShell\Modules*):
+* Work is tracked in Outlook which means
+  * Work is synced across machines
+  * Work and work history is easily reportable via Excel/PowerBI
+  * Emails can quickly be turned into [work items](https://support.microsoft.com/en-us/office/create-a-task-from-a-message-40deff88-941a-4fc0-aba1-7d929d947795)
+* An optional 'ding' every configurable number of minutes to give your brain a hit of dopamine for staying on task
+* Track interruptions (internal/external) and automatically follow-up on them at the end of each work interval (you will be prompted to forget them or add an Outlook note for later).
+* Track estimated vs actual pomodori to complete a task (this can be used to generate a personal velocity metric, if you're into the solo Scrum methodology)
 
-`Install-Module -Name PSProductivityTools -Scope CurrentUser`
+## Installation
 
-When a new version is released with bug fixes or new functionality you can update to the latest version simply by typing the following command:
+This module is not currently set up on the PowerShell Gallery. You will need to [install it manually](https://docs.microsoft.com/en-us/powershell/scripting/developer/module/installing-a-powershell-module?view=powershell-7.1).
 
-`Update-Module -Name PSProductivityTools`
+## Requirements
 
-PowerShellGet is included by default in PowerShell V5, and available downlevel for PowerShell 3.0 and 4.0.
+* PowerShell 5 or later
+* Microsoft Outlook
 
-If you want to install the module without leveraging PowerShellGet, you can either clone the Git-repository or download [this](https://github.com/janegilring/PSProductivityTools/archive/master.zip) ZIP-file and place the contains in one of the following locations:
-- $env:userprofile\Documents\WindowsPowerShell\Modules\PSProductivityTools
-- $env:programfiles\WindowsPowerShell\Modules\PSProductivityTools
+## Usage
 
-# Requirements
+1. Add a task in Outlook
 
-- PowerShell 4.0 or later on the computer the module is installed on
+![Image of a task in Outlook](./assets/2021-06-19-16-04-15.png)
 
-# Optional requirements
+1. Start Working on your tasks
 
-- Enable presentation settings on workstation: https://msunified.net/2013/11/25/lock-down-your-lync-status-and-pc-notifications-using-powershell/
-- Installing Lync 2013 client SDK for presence and notes manipulation: https://msunified.net/2017/08/20/how-to-install-the-lync-2013-client-sdk-without-being-prompted-to-install-visual-studio/
-- Set up custom presence states on local machine: https://msunified.net/2017/08/20/how-to-set-custom-presence-state-in-skype-for-business-on-your-windows-machine/
+```pwsh
+# Get some tasks from Outlook
+[array]$Tasks = Get-OutlookTasks -Folder "[MyEmailAddress]\Tasks\" -State Open
 
-# Usage
+# Start working on them
+do {
+   Start-PomodoroWork -Task $Tasks[0] -Minutes 25 -DingMinutes 1
+   [array]$Tasks = Get-OutlookTasks -Folder "[MyEmailAddress]\Tasks\" -State Open
+} while ($Tasks.count -gt 0)
+```
 
-After installation, you can view available commands by using Get-Command:
-`Get-Command -Module PSProductivityTools`
+1. You will be prompted to estimate how many pomodori it will take to complete the task
 
-The module currently contains the following functions:
-- **Publish-SfBContactInformation** - Publish-SfBContactInformation is a PowerShell function to configure a set of availability settings in the Skype for Business client.
-- **Start-Pomodoro** - Initiates a new Pomodoro sprint and supports several actions such as configuring availability in Skype for Business, enable presentation mode, start music and trigger custom tasks using IFTT such as muting/unmuting a mobile device.
+![Image of being prompted to estimate how many pomodori to complete the task](./assets/2021-06-19-16-06-05.png)
 
-Read more about getting started here: https://msunified.net/2017/08/23/set-yourself-unavailable-with-this-open-source-powershell-based-pomodoro-timer/
-And here: http://www.powershell.no/productivity/2017/08/24/introducing-psproductivitytools.html
+1. Work on the task!
 
-# Planned features and todo-list
+![Image of the console showing work progress on the task](./assets/2021-06-19-16-07-22.png)
 
-- Add Pester tests
-- Add help
+1. Keep track of work in Outlook
 
-# Contributors
+The module will add new custom columns to the task object in Outlook for tracking your estimates/interruptions/etc.
 
-[Jan Egil Ring](https://twitter.com/JanEgilRing) - author
-[Ståle Hansen](https://twitter.com/StaleHansen) - author
+You can view these within Outlook by:
 
-Everyone is welcome to assist by forking the project and submitting pull requests with proposed fixes and enhancements.
+a) Right click on the columns Outlook
+
+b) Select **Columns...**
+
+c) Select in the drop-down menu **User-defined fields in folder**
+
+d) Add the following fields: **CompletedPomodori, EstimatedPomodori, ExternalInterruptions, InternalInterruptions**.
+
+Your tasks should now look like this in Outlook:
+
+![Image of extra columns in Outlook Tasks folder](./assets/2021-06-19-16-13-05.png)
+
+If you don't want to estimate pomodori in PowerShell you can now use this view to provide estimates and Outlook will no longer prompt you.

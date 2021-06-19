@@ -355,7 +355,7 @@ function Get-OutlookTasks {
    
     $Tasks | Add-Member -MemberType MemberSet -Name PSStandardMembers -Value $PSStandardMembers
 
-    $Tasks
+    [array]$Tasks
 }
 
 Function New-OutlookNoteToSelf {
