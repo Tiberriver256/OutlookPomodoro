@@ -31,7 +31,7 @@ This module is not currently set up on the PowerShell Gallery. You will need to 
 
 ![Image of a task in Outlook](./assets/2021-06-19-16-04-15.png)
 
-1. Start Working on your tasks
+2. Start Working on your tasks
 
 ```pwsh
 # Get some tasks from Outlook
@@ -44,27 +44,27 @@ do {
 } while ($Tasks.count -gt 0)
 ```
 
-1. You will be prompted to estimate how many pomodori it will take to complete the task
+3. You will be prompted to estimate how many pomodori it will take to complete the task
 
 ![Image of being prompted to estimate how many pomodori to complete the task](./assets/2021-06-19-16-06-05.png)
 
-1. Work on the task!
+4. Work on the task!
 
 ![Image of the console showing work progress on the task](./assets/2021-06-19-16-07-22.png)
 
-1. Keep track of work in Outlook
+5. Keep track of work in Outlook
 
 The module will add new custom columns to the task object in Outlook for tracking your estimates/interruptions/etc.
 
 You can view these within Outlook by:
 
-a) Right click on the columns Outlook
+  a) Right click on the columns Outlook
 
-b) Select **Columns...**
+  b) Select **Columns...**
 
-c) Select in the drop-down menu **User-defined fields in folder**
+  c) Select in the drop-down menu **User-defined fields in folder**
 
-d) Add the following fields: **CompletedPomodori, EstimatedPomodori, ExternalInterruptions, InternalInterruptions**.
+  d) Add the following fields: **CompletedPomodori, EstimatedPomodori, ExternalInterruptions, InternalInterruptions**.
 
 Your tasks should now look like this in Outlook:
 
